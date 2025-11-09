@@ -4,6 +4,7 @@ import ShopPage from '../pages/shop/shop-page.js';
 import AddShopPage from '../pages/shop/add-shop-page.js';
 import LoginPage from '../pages/auth/login-page.js';
 import RegisterPage from '../pages/auth/register-page.js';
+import OfflinePage from '../pages/offline-page.js';
 
 const routes = {
   '/': { page: HomePage },  
@@ -12,6 +13,7 @@ const routes = {
   '/shop/add': { page: AddShopPage, requiresAuth: true },
   '/login': { page: LoginPage },
   '/register': { page: RegisterPage },
+  '/offline': { page: OfflinePage },
 };
 
 export default routes;

@@ -1,5 +1,4 @@
 import '../styles/styles.css';
-
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
@@ -42,3 +41,27 @@ if ('serviceWorker' in navigator) {
     }
   });
 }
+
+let deferredPrompt;
+const installButton = document.getElementById('installButton');
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  installButton.hidden = false;
+  console.log('📦 Event beforeinstallprompt terdeteksi, tombol install ditampilkan.');
+});
+
+installButton.addEventListener('click', async () => {
+  installButton.hidden = true;
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    console.log(`📲 User memilih: ${outcome}`);
+    deferredPrompt = null;
+  }
+});
+
+window.addEventListener('appinstalled', () => {
+  console.log('✅ Aplikasi berhasil diinstall!');
+});

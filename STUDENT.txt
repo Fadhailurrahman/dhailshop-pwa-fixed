@@ -1,3 +1,4 @@
 APP_URL=<url_aplikasi>
 MAP_SERVICE_API_KEY=<api_key>
 VAPID_KEY_PUBLIC=<vapid_key_public>
+https://fadhailurrahman.github.io/dhailshop-pwa/

@@ -4,8 +4,7 @@ const DATA_CACHE_NAME = 'dhshop-data-cache-v1';
 const APP_SHELL = [
   '/',
   '/index.html',
-  '/styles/styles.css',
-  '/scripts/index.js',
+  '/offline.html', 
   '/images/logo.png',
   '/images/icon-192.png',
   '/images/icon-512.png'
@@ -21,35 +20,60 @@ self.addEventListener('install', (event) => {
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then(keys => {
-      return Promise.all(
+    caches.keys().then(keys =>
+      Promise.all(
         keys.map(key => {
-          if (key !== CACHE_NAME && key !== DATA_CACHE_NAME) return caches.delete(key);
+          if (key !== CACHE_NAME && key !== DATA_CACHE_NAME) {
+            return caches.delete(key);
+          }
         })
-      );
-    })
+      )
+    )
   );
+  self.clients.claim();
 });
 
 self.addEventListener('fetch', (event) => {
   const { request } = event;
 
+  if (
+    request.url.includes('vite') ||
+    request.url.includes('hot') ||
+    request.url.includes('@fs') ||
+    request.url.includes('sockjs-node')
+  ) {
+    return;
+  }
+
   if (request.url.includes('/api/')) {
     event.respondWith(
-      caches.open(DATA_CACHE_NAME).then(cache => 
-        fetch(request)
-          .then(response => {
+      caches.open(DATA_CACHE_NAME).then(async (cache) => {
+        try {
+          const response = await fetch(request);
+          if (response && response.status === 200) {
             cache.put(request, response.clone());
-            return response;
-          })
-          .catch(() => caches.match(request))
-      )
+          }
+          return response;
+        } catch {
+          return cache.match(request);
+        }
+      })
     );
-  } else {
-    event.respondWith(
-      caches.match(request).then(response => response || fetch(request))
-    );
+    return;
   }
+
+  event.respondWith(
+    caches.match(request).then((response) => {
+      return (
+        response ||
+        fetch(request).catch(() => {
+          if (request.mode === 'navigate') {
+            return caches.match('/offline.html');
+          }
+        })
+      );
+    })
+  );
 });
 
 self.addEventListener('push', (event) => {
@@ -76,9 +100,11 @@ self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   const targetUrl = event.action === 'open' ? event.notification.data.url : '/';
   event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
       for (const client of clientList) {
-        if (client.url === targetUrl && 'focus' in client) return client.focus();
+        if (client.url === targetUrl && 'focus' in client) {
+          return client.focus();
+        }
       }
       if (clients.openWindow) return clients.openWindow(targetUrl);
     })

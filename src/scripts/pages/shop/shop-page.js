@@ -64,14 +64,16 @@ export default class ShopPage {
     });
 
     const idb = new IDBHelper();
+    await idb.dbPromise; 
     let data;
 
     try {
       if (navigator.onLine) {
         const apiData = await getStories(token);
 
-        for (const item of apiData.listStory) {
+        await Promise.all(apiData.listStory.map(async (item) => {
           await idb.addItem({
+            id: item.id || Date.now(),
             title: item.name || 'Tanpa nama',
             description: item.description || '',
             photo: item.photoUrl || '/images/placeholder.png',
@@ -79,22 +81,26 @@ export default class ShopPage {
             lon: item.lon ?? null,
             createdAt: item.createdAt || new Date().toISOString(),
           });
-        }
-        data = { listStory: apiData.listStory.map(item => ({
-          title: item.name || 'Tanpa nama',
-          description: item.description || '',
-          photo: item.photoUrl || '/images/placeholder.png',
-          lat: item.lat ?? null,
-          lon: item.lon ?? null,
-          createdAt: item.createdAt || new Date().toISOString(),
-        }))};
+        }));
+
+        data = {
+          listStory: apiData.listStory.map(item => ({
+            title: item.name || 'Tanpa nama',
+            description: item.description || '',
+            photo: item.photoUrl || '/images/placeholder.png',
+            lat: item.lat ?? null,
+            lon: item.lon ?? null,
+            createdAt: item.createdAt || new Date().toISOString(),
+          })),
+        };
       } else {
         const offlineItems = await idb.getAllItems();
         data = { listStory: offlineItems };
       }
     } catch (err) {
       console.error('❌ Gagal mengambil produk:', err);
-      data = { listStory: [] };
+      const offlineItems = await idb.getAllItems();
+      data = { listStory: offlineItems };
     }
 
     this.storiesCache = data?.listStory || [];
@@ -115,9 +121,9 @@ export default class ShopPage {
         transition:transform 0.2s, box-shadow 0.2s;
         cursor:pointer;
       `;
+
       card.innerHTML = `
-        <img src="${story.photo}"
-             alt="Foto produk ${story.title}" 
+        <img src="${story.photo}" alt="Foto produk ${story.title}" 
              style="width:100%; height:150px; object-fit:cover; border-radius:8px; margin-bottom:10px;" />
         <h3 style="color:#1e3a8a; margin-bottom:6px;">${story.title}</h3>
         <p style="font-size:14px; color:#444; min-height:40px;">${story.description}</p>
