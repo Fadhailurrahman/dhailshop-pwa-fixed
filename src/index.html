@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="shortcut icon" href="/favicon.png" />
+    <link rel="stylesheet" href="/styles/styles.css" />
+    <title>dh@'ilShop.id</title>
+    <script type="module" src="/scripts/index.js"></script>
+  </head>
+
+  <body>
+    <a href="#main-content" class="skip-link">Lewati ke konten utama</a>
+
+    <header>
+      <div class="main-header container">
+        <a class="brand-name" href="#/" aria-label="Beranda dh@'ilShop.id">
+          dh@'ilShop.id
+        </a>
+
+        <nav
+          id="navigation-drawer"
+          class="navigation-drawer"
+          aria-label="Navigasi Utama"
+        >
+          <ul id="nav-list" class="nav-list">
+            <li><a href="#/">Beranda</a></li>
+            <li><a href="#/about">Tentang Kami</a></li>
+            <li><a href="#/shop">Toko</a></li>
+            <li>
+              <a href="#/login" id="nav-login">Login</a>
+              <a href="#" id="nav-logout" style="display: none;">Logout</a>
+            </li>
+          </ul>
+        </nav>
+
+        <button
+          id="drawer-button"
+          class="drawer-button"
+          aria-label="Menu Navigasi"
+          aria-expanded="false"
+        >
+          ☰
+        </button>
+      </div>
+    </header>
+
+    <main id="main-content" class="main-content" tabindex="-1" role="main">
+      <section class="auth-section">
+        <div class="auth-card">
+          <h2 class="auth-title">Masuk ke Akun Anda</h2>
+          <form id="login-form" class="auth-form">
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                placeholder="contoh@email.com"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="password">Kata Sandi</label>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                placeholder="••••••••"
+                required
+              />
+            </div>
+
+            <button type="submit" class="btn-primary">Masuk</button>
+
+            <p class="auth-footer">
+              Belum punya akun?
+              <a href="#/register">Daftar di sini</a>
+            </p>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container">
+        <p>
+          &copy; 2025 <strong>dh@'ilShop.id</strong> —
+          Belanja Tanpa Ribet Hanya Dengan Satu Kali Klik
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,108 @@
+import routes from '../routes/routes.js';
+import { getActiveRoute } from '../routes/url-parser.js';
+import { AuthHelper } from '../utils/auth-helper.js';
+
+class App {
+  #content = null;
+  #drawerButton = null;
+  #navigationDrawer = null;
+  #previousRoute = null;
+
+  constructor({ navigationDrawer, drawerButton, content }) {
+    this.#content = content;
+    this.#drawerButton = drawerButton;
+    this.#navigationDrawer = navigationDrawer;
+
+    if (this.#drawerButton && this.#navigationDrawer) {
+      this.#setupDrawer();
+    }
+
+    window.addEventListener('hashchange', () => this.renderPage());
+    window.addEventListener('load', () => this.renderPage());
+  }
+
+  #setupDrawer() {
+    this.#drawerButton.addEventListener('click', () => {
+      const isOpen = this.#navigationDrawer.classList.toggle('open');
+      this.#drawerButton.setAttribute('aria-expanded', isOpen);
+    });
+
+    this.#navigationDrawer.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        this.#navigationDrawer.classList.remove('open');
+        this.#drawerButton.setAttribute('aria-expanded', 'false');
+      });
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        this.#navigationDrawer.classList.remove('open');
+        this.#drawerButton.setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
+
+  async renderPage() {
+    if (!this.#content) {
+      this.#content = document.querySelector('#main-content');
+      if (!this.#content) {
+        console.error('❌ Elemen #main-content tidak ditemukan.');
+        return;
+      }
+    }
+
+    const url = getActiveRoute();
+    const route = routes[url] || routes['/'];
+
+    let pageInstance;
+    try {
+      pageInstance = typeof route.page === 'function' ? new route.page() : route.page;
+    } catch (err) {
+      console.error('❌ Gagal membuat instance halaman:', err);
+      return;
+    }
+
+    const token = localStorage.getItem('token');
+    if (route.requiresAuth && !token) {
+      window.location.hash = '#/login';
+      return;
+    }
+
+    const currentContent = this.#content;
+
+    const applyTransition = async () => {
+      currentContent.classList.remove('active');
+      await new Promise(r => setTimeout(r, 50)); 
+      currentContent.innerHTML = await pageInstance.render();
+      currentContent.classList.add('active');
+
+      if (pageInstance.afterRender) {
+        try {
+          await pageInstance.afterRender();
+        } catch (err) {
+          console.error('❌ Error afterRender:', err);
+        }
+      }
+    };
+
+    if (document.startViewTransition) {
+      await document.startViewTransition(applyTransition);
+    } else {
+      await applyTransition();
+    }
+
+    try { AuthHelper.updateNavbar(); } catch(e){}
+
+    const logoutItem = document.querySelector('#nav-logout');
+    if (logoutItem) {
+      logoutItem.addEventListener('click', (e) => {
+        e.preventDefault();
+        AuthHelper.logout();
+      });
+    }
+
+    this.#previousRoute = url;
+  }
+}
+
+export default App;
