@@ -7,6 +7,7 @@ class App {
   #drawerButton = null;
   #navigationDrawer = null;
   #previousRoute = null;
+  #logoutListenerAttached = false; 
 
   constructor({ navigationDrawer, drawerButton, content }) {
     this.#content = content;
@@ -72,7 +73,7 @@ class App {
 
     const applyTransition = async () => {
       currentContent.classList.remove('active');
-      await new Promise(r => setTimeout(r, 50)); 
+      await new Promise(r => setTimeout(r, 50));
       currentContent.innerHTML = await pageInstance.render();
       currentContent.classList.add('active');
 
@@ -91,14 +92,22 @@ class App {
       await applyTransition();
     }
 
-    try { AuthHelper.updateNavbar(); } catch(e){}
+    AuthHelper.updateNavbar();
+
+    const navList = document.querySelector('#nav-list');
+    if (token && !document.querySelector('#nav-offline')) {
+      const offlineLi = document.createElement('li');
+      offlineLi.innerHTML = `<a href="#/offline" id="nav-offline">Simpan Cerita</a>`;
+      navList.insertBefore(offlineLi, navList.querySelector('li:last-child'));
+    }
 
     const logoutItem = document.querySelector('#nav-logout');
-    if (logoutItem) {
+    if (logoutItem && !this.#logoutListenerAttached) {
       logoutItem.addEventListener('click', (e) => {
         e.preventDefault();
         AuthHelper.logout();
       });
+      this.#logoutListenerAttached = true;
     }
 
     this.#previousRoute = url;

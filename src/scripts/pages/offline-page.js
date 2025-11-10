@@ -49,7 +49,6 @@ class OfflinePage {
 
     await renderList();
 
-    // ➕ Tambah item
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const title = input.value.trim();
@@ -59,7 +58,6 @@ class OfflinePage {
       await renderList();
     });
 
-    // ✏️ Edit / 🗑️ Hapus item
     list.addEventListener('click', async (e) => {
       const li = e.target.closest('li');
       if (!li) return;

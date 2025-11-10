@@ -21,7 +21,7 @@ export async function syncOfflineData() {
 
       const result = await addStory(token, formData);
       if (!result.error) {
-        await idb.deleteItem(item.id); // hapus dari cache setelah sukses
+        await idb.deleteItem(item.id); 
         console.log(`✅ Sinkron sukses untuk item: ${item.title}`);
       }
     } catch (err) {
@@ -30,7 +30,6 @@ export async function syncOfflineData() {
   }
 }
 
-// jalankan saat online lagi
 window.addEventListener('online', () => {
   console.log('🌐 Online lagi — mulai sinkronisasi data...');
   syncOfflineData();

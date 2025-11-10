@@ -16,9 +16,10 @@ export default class ShopPage {
     return `
       <section class="container page-transition" id="shop-page">
         <h1 style="text-align:center; margin-bottom:30px; color:#1e3a8a;">🛍️ Toko Produk</h1>
+
         <div style="text-align:center; margin-bottom:20px;">
           <button id="btn-add-story"
-            style="background:#1e3a8a; color:#fff; padding:10px 25px; border:none; border-radius:8px; cursor:pointer; font-weight:600; width:200px;"
+            style="background:#1e3a8a; color:#fff; padding:12px 28px; border:none; border-radius:8px; cursor:pointer; font-weight:600; font-size:1rem;"
             aria-label="Tambah Produk Baru">
             + Tambah Produk
           </button>
@@ -31,7 +32,7 @@ export default class ShopPage {
 
         <h2 style="margin:40px 0 20px; text-align:center;">Daftar Produk</h2>
         <div id="products-container"
-             style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:20px; justify-content:center; margin-top:10px;">
+          style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:20px; justify-content:center; margin-top:10px;">
         </div>
       </section>
     `;
@@ -44,7 +45,8 @@ export default class ShopPage {
     const container = document.querySelector('#products-container');
     const mapContainer = document.querySelector('#map');
     const addBtn = document.querySelector('#btn-add-story');
-    if (!container || !mapContainer) return console.error('❌ Container map atau products tidak ditemukan.');
+
+    if (!container || !mapContainer) return console.error('Container map atau products tidak ditemukan.');
 
     if (!this.initialized) {
       this.map = L.map(mapContainer).setView([-2, 118], 4);
@@ -63,12 +65,18 @@ export default class ShopPage {
       window.location.hash = '#/shop/add';
     });
 
-    const idb = new IDBHelper();
-    await idb.dbPromise; 
-    let data;
+    await this.loadProducts();
+  }
 
+  async loadProducts() {
+    const container = document.querySelector('#products-container');
+    const idb = new IDBHelper();
+    await idb.dbPromise;
+
+    let data;
     try {
       if (navigator.onLine) {
+        const token = localStorage.getItem('token');
         const apiData = await getStories(token);
 
         await Promise.all(apiData.listStory.map(async (item) => {
@@ -97,14 +105,12 @@ export default class ShopPage {
         const offlineItems = await idb.getAllItems();
         data = { listStory: offlineItems };
       }
-    } catch (err) {
-      console.error('❌ Gagal mengambil produk:', err);
+    } catch {
       const offlineItems = await idb.getAllItems();
       data = { listStory: offlineItems };
     }
 
     this.storiesCache = data?.listStory || [];
-    this.markersMap.clear();
     container.innerHTML = '';
     const fragment = document.createDocumentFragment();
 
@@ -112,31 +118,29 @@ export default class ShopPage {
       const card = document.createElement('div');
       card.className = 'product-card';
       card.id = `product-${index}`;
-      card.style.cssText = `
-        border:1px solid #e5e7eb;
-        border-radius:12px;
-        background:#fff;
-        box-shadow:0 2px 6px rgba(0,0,0,0.08);
-        padding:14px;
-        transition:transform 0.2s, box-shadow 0.2s;
-        cursor:pointer;
-      `;
-
       card.innerHTML = `
-        <img src="${story.photo}" alt="Foto produk ${story.title}" 
-             style="width:100%; height:150px; object-fit:cover; border-radius:8px; margin-bottom:10px;" />
-        <h3 style="color:#1e3a8a; margin-bottom:6px;">${story.title}</h3>
-        <p style="font-size:14px; color:#444; min-height:40px;">${story.description}</p>
-        <p style="font-size:12px; color:#666;">📅 ${story.createdAt ? new Date(story.createdAt).toLocaleDateString() : ''}</p>
+        <img src="${story.photo}" alt="Foto produk ${story.title}" />
+        <h3>${story.title}</h3>
+        <p>${story.description}</p>
+        <p>📅 ${story.createdAt ? new Date(story.createdAt).toLocaleDateString() : ''}</p>
+        <div style="display:flex; justify-content:space-between; gap:10px; margin-top:10px;">
+          <button class="save-offline">💾 Simpan</button>
+          <button class="delete-offline">🗑️ Hapus</button>
+        </div>
       `;
 
-      card.addEventListener('mouseenter', () => {
-        card.style.transform = 'translateY(-4px)';
-        card.style.boxShadow = '0 4px 12px rgba(0,0,0,0.12)';
+      card.querySelector('.delete-offline').addEventListener('click', async (e) => {
+        e.stopPropagation();
+        if (!story.id) return;
+        await idb.deleteItem(story.id);
+        await this.loadProducts();
       });
-      card.addEventListener('mouseleave', () => {
-        card.style.transform = 'translateY(0)';
-        card.style.boxShadow = '0 2px 6px rgba(0,0,0,0.08)';
+
+      card.querySelector('.save-offline').addEventListener('click', async (e) => {
+        e.stopPropagation();
+        if (!story.title) return;
+        await idb.addItem({ ...story });
+        await this.loadProducts();
       });
 
       fragment.appendChild(card);
@@ -153,7 +157,6 @@ export default class ShopPage {
           if (targetCard) {
             targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
             targetCard.style.outline = '3px solid #2563eb';
-            targetCard.style.transition = 'outline 0.3s';
             setTimeout(() => (targetCard.style.outline = 'none'), 1500);
           }
         });

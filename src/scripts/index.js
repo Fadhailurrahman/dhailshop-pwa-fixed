@@ -34,7 +34,7 @@ L.Icon.Default.mergeOptions({
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', async () => {
     try {
-      const registration = await navigator.serviceWorker.register('/service-worker.js');
+      const registration = await navigator.serviceWorker.register(`${import.meta.env.BASE_URL}service-worker.js`);
       console.log('✅ Service Worker terdaftar:', registration.scope);
     } catch (error) {
       console.error('❌ Pendaftaran Service Worker gagal:', error);

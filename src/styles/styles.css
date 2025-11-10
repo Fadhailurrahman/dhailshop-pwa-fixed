@@ -232,8 +232,10 @@ header {
   border-radius: 8px;
 }
 
-#form-add-story {
-  max-width: 600px;
+#form-add-story,
+#about-section,
+#offline-section {
+  max-width: 700px;
   margin: 60px auto;
   background: #ffffff;
   padding: 40px 30px;
@@ -242,13 +244,16 @@ header {
   text-align: left;
 }
 
-#form-add-story h2 {
+#form-add-story h2,
+#about-section h2,
+#offline-section h2 {
   color: #1e3a8a;
   margin-bottom: 25px;
   text-align: center;
 }
 
-#story-form {
+#story-form,
+#offline-section .offline-list {
   display: flex;
   flex-direction: column;
   gap: 18px;
@@ -263,7 +268,8 @@ header {
 
 #story-form input[type="file"],
 #story-form textarea,
-#story-form input[type="text"] {
+#story-form input[type="text"],
+#offline-section input[type="text"] {
   width: 100%;
   padding: 12px 14px;
   border-radius: 10px;
@@ -275,7 +281,8 @@ header {
 }
 
 #story-form input:focus,
-#story-form textarea:focus {
+#story-form textarea:focus,
+#offline-section input:focus {
   border-color: #2563eb;
   background-color: #fff;
   box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
@@ -293,7 +300,8 @@ header {
   margin-top: 10px;
 }
 
-#story-form button {
+#story-form button,
+#offline-section button {
   padding: 10px 25px;
   border: none;
   border-radius: 8px;
@@ -302,25 +310,30 @@ header {
   transition: background-color 0.3s, transform 0.2s ease;
 }
 
-#story-form button:hover {
+#story-form button:hover,
+#offline-section button:hover {
   transform: translateY(-2px);
 }
 
 #story-form button[type="submit"],
-#btn-start-camera {
+#btn-start-camera,
+#offline-section button.save-offline {
   background-color: #2563eb;
   color: #fff;
 }
 #story-form button[type="submit"]:hover,
-#btn-start-camera:hover {
+#btn-start-camera:hover,
+#offline-section button.save-offline:hover {
   background-color: #1e40af;
 }
 
-#btn-cancel {
+#btn-cancel,
+#offline-section button.delete-offline {
   background-color: #e11d48;
   color: #fff;
 }
-#btn-cancel:hover {
+#btn-cancel:hover,
+#offline-section button.delete-offline:hover {
   background-color: #b91c1c;
 }
 
@@ -330,6 +343,44 @@ header {
   box-shadow: 0 2px 10px rgba(0,0,0,0.15);
   height: 400px;
   margin-top: 30px;
+}
+
+#about-section p,
+#offline-section p {
+  color: #555;
+  line-height: 1.6;
+  margin-bottom: 15px;
+}
+
+.offline-card {
+  background: #f9fafb;
+  border-radius: 12px;
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.offline-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+}
+
+.offline-card .offline-info {
+  flex: 1;
+  padding-right: 10px;
+}
+
+.offline-card .offline-info h4 {
+  margin-bottom: 6px;
+  color: #1e3a8a;
+}
+
+.offline-card .offline-info p {
+  font-size: 0.9rem;
+  color: #555;
+  margin-bottom: 0;
 }
 
 @media screen and (max-width: 768px) {
@@ -346,8 +397,9 @@ header {
     gap: 15px;
   }
 
-  #form-add-story {
+  #form-add-story,
+  #about-section,
+  #offline-section {
     padding: 25px 20px;
   }
 }
-
