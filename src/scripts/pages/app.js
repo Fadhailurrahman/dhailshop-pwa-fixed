@@ -1,5 +1,4 @@
 import routes from '../routes/routes.js';
-import { getActiveRoute } from '../routes/url-parser.js';
 import { AuthHelper } from '../utils/auth-helper.js';
 
 class App {
@@ -9,8 +8,8 @@ class App {
   #previousRoute = null;
   #logoutListenerAttached = false;
 
-  constructor({ navigationDrawer, drawerButton, content }) {
-    this.#content = content;
+  constructor({ content, drawerButton, navigationDrawer }) {
+    this.#content = content || document.querySelector('#main-content');
     this.#drawerButton = drawerButton;
     this.#navigationDrawer = navigationDrawer;
 
@@ -20,6 +19,21 @@ class App {
 
     window.addEventListener('hashchange', () => this.renderPage());
     window.addEventListener('load', () => this.renderPage());
+  }
+
+  #matchRoute(url) {
+    if (routes[url]) return { route: routes[url], params: [] };
+
+    for (const path in routes) {
+      if (path.includes(':')) {
+        const regexStr = '^' + path.replace(/:[^\s/]+/g, '([\\w-]+)') + '$';
+        const regex = new RegExp(regexStr);
+        const match = url.match(regex);
+        if (match) return { route: routes[path], params: match.slice(1) };
+      }
+    }
+
+    return { route: routes['*'], params: [] };
   }
 
   #setupDrawer() {
@@ -44,13 +58,16 @@ class App {
   }
 
   async renderPage() {
-    if (!this.#content) {
-      this.#content = document.querySelector('#main-content');
-      if (!this.#content) return;
-    }
+    if (!this.#content) return;
 
-    const url = getActiveRoute();
-    const route = routes[url] || routes['*'];
+    const url = location.hash.replace(/^#/, '') || '/';
+    const { route, params } = this.#matchRoute(url);
+
+    if (!route) {
+      console.error('Route tidak ditemukan untuk URL:', url);
+      window.location.hash = '#/*';
+      return;
+    }
 
     const token = localStorage.getItem('token');
     if (route.requiresAuth && !token) {
@@ -60,8 +77,11 @@ class App {
 
     let pageInstance;
     try {
-      pageInstance = typeof route.page === 'function' ? new route.page() : route.page;
-    } catch {
+      pageInstance = params.length > 0
+        ? new route.page(...params) 
+        : (typeof route.page === 'function' ? new route.page() : route.page);
+    } catch (err) {
+      console.error('Error saat membuat instance page:', err);
       window.location.hash = '#/*';
       return;
     }
@@ -77,7 +97,9 @@ class App {
       if (pageInstance.afterRender) {
         try {
           await pageInstance.afterRender();
-        } catch {}
+        } catch (err) {
+          console.error('Error di afterRender:', err);
+        }
       }
     };
 

@@ -1,21 +1,17 @@
-import HomePage from '../pages/home/home-page.js';
-import AboutPage from '../pages/about/about-page.js';
-import ShopPage from '../pages/shop/shop-page.js';
-import AddShopPage from '../pages/shop/add-shop-page.js';
-import LoginPage from '../pages/auth/login-page.js';
-import RegisterPage from '../pages/auth/register-page.js';
-import OfflinePage from '../pages/offline-page.js';
-import NotFoundPage from '../pages/not-found-page.js'; 
-
-const routes = {
-  '/': { page: HomePage },  
-  '/about': { page: AboutPage },
-  '/shop': { page: ShopPage, requiresAuth: true },
-  '/shop/add': { page: AddShopPage, requiresAuth: true },
-  '/login': { page: LoginPage },
-  '/register': { page: RegisterPage },
-  '/offline': { page: OfflinePage },
-  '*': { page: NotFoundPage },
-};
-
-export default routes;
+export default class NotFoundPage {
+    async render() {
+      return `
+        <section class="container page-transition" id="not-found-page">
+          <h1 style="text-align:center; margin-top:50px; color:#dc2626;">❌ Halaman Tidak Ditemukan</h1>
+          <p style="text-align:center; margin-top:20px; color:#555;">
+            Maaf, halaman yang kamu tuju tidak tersedia.<br>
+            Kembali ke <a href="#/">Beranda</a>.
+          </p>
+        </section>
+      `;
+    }
+  
+    async afterRender() {
+    }
+  }
+  

@@ -5,6 +5,7 @@ import { IDBHelper } from '../../utils/indexedDB-helper.js';
 
 export default class ShopPage {
   constructor() {
+    this.id = id;
     this.map = null;
     this.markerGroup = null;
     this.storiesCache = [];
