@@ -29,7 +29,7 @@ export default class AboutPage {
           <p style="color:#555; margin-bottom:5px;">Alamat: Jl. Pak Sakera Guluk-Guluk Sumenep Madura</p>
         </div>
 
-        <!-- ✅ Tambahan tombol toggle notifikasi -->
+        <!-- ✅ Tombol Toggle Notifikasi -->
         <div style="text-align:center; margin-top:50px;">
           <button 
             id="toggle-notif"
@@ -47,7 +47,7 @@ export default class AboutPage {
             onmouseenter="this.style.background='#1e40af';"
             onmouseleave="this.style.background='#2563eb';"
           >
-            🔔 Langganan Notifikasi
+            🔔 Aktifkan Notifikasi
           </button>
         </div>
 
@@ -57,8 +57,31 @@ export default class AboutPage {
 
   async afterRender() {
     const btn = document.querySelector('#toggle-notif');
+    if (!('serviceWorker' in navigator)) return;
+
+    const registration = await navigator.serviceWorker.ready;
+    let subscription = await registration.pushManager.getSubscription();
+
+    if (subscription) {
+      btn.textContent = '🔕 Nonaktifkan Notifikasi';
+      btn.dataset.active = 'true';
+    } else {
+      btn.textContent = '🔔 Aktifkan Notifikasi';
+      btn.dataset.active = 'false';
+    }
+
     btn.addEventListener('click', async () => {
-      await PushHelper.requestPermission();
+      if (btn.dataset.active === 'true') {
+        const sub = await registration.pushManager.getSubscription();
+        if (sub) await sub.unsubscribe();
+        console.log('🧹 Notifikasi dinonaktifkan.');
+        btn.textContent = '🔔 Aktifkan Notifikasi';
+        btn.dataset.active = 'false';
+      } else {
+        await PushHelper.requestPermission();
+        btn.textContent = '🔕 Nonaktifkan Notifikasi';
+        btn.dataset.active = 'true';
+      }
     });
   }
 }

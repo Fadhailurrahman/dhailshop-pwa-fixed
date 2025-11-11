@@ -13,20 +13,25 @@ class OfflinePage {
           <input type="text" id="offline-title" placeholder="Nama toko / item..." required />
           <button type="submit" class="btn-primary">Tambah</button>
         </form>
+
+        <input type="text" id="search-input" placeholder="🔍 Cari data offline..." />
+
         <ul id="offline-list" class="offline-list"></ul>
       </section>
     `;
   }
 
   async afterRender() {
-    await this.db.dbPromise;
-
     const form = document.querySelector('#offline-form');
     const input = document.querySelector('#offline-title');
     const list = document.querySelector('#offline-list');
+    const searchInput = document.querySelector('#search-input');
 
-    const renderList = async () => {
-      const items = await this.db.getAllItems();
+    const renderList = async (keyword = '') => {
+      let items = keyword
+        ? await this.db.searchByTitle(keyword)
+        : await this.db.getAllItems();
+
       if (!items.length) {
         list.innerHTML = '<li class="empty">Belum ada data offline.</li>';
         return;
@@ -35,14 +40,15 @@ class OfflinePage {
       list.innerHTML = items
         .map(
           (item) => `
-        <li data-id="${item.id}">
-          <span>${item.title}</span>
-          <div>
-            <button class="edit-btn">✏️</button>
-            <button class="delete-btn">🗑️</button>
-          </div>
-        </li>
-      `
+          <li data-id="${item.id}">
+            <span>${item.title}</span>
+            ${item.needsSync ? '<small style="color:orange">[Belum sinkron]</small>' : ''}
+            <div>
+              <button class="edit-btn">✏️</button>
+              <button class="delete-btn">🗑️</button>
+            </div>
+          </li>
+        `
         )
         .join('');
     };
@@ -53,9 +59,11 @@ class OfflinePage {
       e.preventDefault();
       const title = input.value.trim();
       if (!title) return;
+
       await this.db.addItem({ title });
       input.value = '';
       await renderList();
+      alert('✅ Data disimpan ke IndexedDB!');
     });
 
     list.addEventListener('click', async (e) => {
@@ -66,6 +74,7 @@ class OfflinePage {
       if (e.target.classList.contains('delete-btn')) {
         await this.db.deleteItem(id);
         await renderList();
+        alert('🗑️ Data berhasil dihapus.');
       }
 
       if (e.target.classList.contains('edit-btn')) {
@@ -73,8 +82,13 @@ class OfflinePage {
         if (newTitle) {
           await this.db.updateItem(id, { title: newTitle });
           await renderList();
+          alert('✏️ Data berhasil diperbarui.');
         }
       }
+    });
+
+    searchInput.addEventListener('input', async (e) => {
+      await renderList(e.target.value.trim());
     });
   }
 }

@@ -7,7 +7,7 @@ class App {
   #drawerButton = null;
   #navigationDrawer = null;
   #previousRoute = null;
-  #logoutListenerAttached = false; 
+  #logoutListenerAttached = false;
 
   constructor({ navigationDrawer, drawerButton, content }) {
     this.#content = content;
@@ -46,26 +46,23 @@ class App {
   async renderPage() {
     if (!this.#content) {
       this.#content = document.querySelector('#main-content');
-      if (!this.#content) {
-        console.error('❌ Elemen #main-content tidak ditemukan.');
-        return;
-      }
+      if (!this.#content) return;
     }
 
     const url = getActiveRoute();
-    const route = routes[url] || routes['/'];
-
-    let pageInstance;
-    try {
-      pageInstance = typeof route.page === 'function' ? new route.page() : route.page;
-    } catch (err) {
-      console.error('❌ Gagal membuat instance halaman:', err);
-      return;
-    }
+    const route = routes[url] || routes['*'];
 
     const token = localStorage.getItem('token');
     if (route.requiresAuth && !token) {
       window.location.hash = '#/login';
+      return;
+    }
+
+    let pageInstance;
+    try {
+      pageInstance = typeof route.page === 'function' ? new route.page() : route.page;
+    } catch {
+      window.location.hash = '#/*';
       return;
     }
 
@@ -80,9 +77,7 @@ class App {
       if (pageInstance.afterRender) {
         try {
           await pageInstance.afterRender();
-        } catch (err) {
-          console.error('❌ Error afterRender:', err);
-        }
+        } catch {}
       }
     };
 

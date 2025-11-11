@@ -6,12 +6,14 @@ export default defineConfig(({ mode }) => {
 
   return {
     base: '/dhailshop-pwa/',
-
     root: resolve(__dirname, 'src'),
-    publicDir: resolve(__dirname, 'src', 'public'),
+    publicDir: resolve(__dirname, 'src/public'),
     build: {
       outDir: resolve(__dirname, 'dist'),
       emptyOutDir: true,
+      rollupOptions: {
+        input: resolve(__dirname, 'src/index.html'),
+      },
     },
     resolve: {
       alias: {
@@ -20,6 +22,10 @@ export default defineConfig(({ mode }) => {
     },
     define: {
       'import.meta.env.VITE_VAPID_KEY_PUBLIC': JSON.stringify(env.VITE_VAPID_KEY_PUBLIC),
+    },
+    server: {
+      port: 5173,
+      open: true,
     },
   };
 });

@@ -29,31 +29,33 @@ const PushHelper = {
       const registration = await navigator.serviceWorker.ready;
       let subscription = await registration.pushManager.getSubscription();
 
-      if (subscription) {
-        console.log('♻️ Subscription lama dihapus. Membuat ulang subscription baru...');
-        await subscription.unsubscribe();
+      if (subscription && subscription.endpoint) {
+        console.log('♻️ Subscription lama ditemukan, gunakan ulang.');
+        await this.sendSubscriptionToServer(subscription);
+        return;
       }
 
-      const vapidKey =
-        'BCCs2eonMI-6H2ctvFaWg-UYdDv387Vno_bzUzALpB442r2lCnsHmtrx8biyPi_E-1fSGABK_Qs_GlvPoJJqxbk';
-      const convertedKey = this.urlBase64ToUint8Array(vapidKey);
+      const vapidPublicKey = import.meta.env.VITE_VAPID_KEY_PUBLIC || 
+        'BCCs2eonMI-6H2ctvFaWg-UYdDv387Vno_bzUzALpB442r2lCnsHmtrx8biyPi_E-1fSGABK_Qs_GlvPoJJqxb';
+
+      const convertedKey = this.urlBase64ToUint8Array(vapidPublicKey.trim());
 
       subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: convertedKey,
       });
 
-      console.log('📦 Subscription baru:', subscription);
+      console.log('📦 Subscription baru berhasil dibuat:', subscription);
       await this.sendSubscriptionToServer(subscription);
     } catch (error) {
-      console.error('❌ Gagal melakukan subscribe push:', error.message);
+      console.error('❌ Gagal melakukan subscribe push:', error);
     }
   },
 
   async sendSubscriptionToServer(subscription) {
     try {
-      const token =
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ1c2VyLV9LMVlaNVh5VkdUZFNTSHgiLCJpYXQiOjE3NjI3MjIxNzV9.EGbZqRMZ5FagiwZYywz6w5f5iaD3BvTExmG-QDR_T0M';
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('Token login tidak ditemukan.');
 
       const payload = {
         endpoint: subscription.endpoint,
@@ -63,17 +65,14 @@ const PushHelper = {
         },
       };
 
-      const response = await fetch(
-        'https://story-api.dicoding.dev/v1/notifications/subscribe',
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(payload),
-        }
-      );
+      const response = await fetch('https://story-api.dicoding.dev/v1/notifications/subscribe', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
 
       const result = await response.json();
       console.log('📡 Response server:', result);
@@ -87,7 +86,11 @@ const PushHelper = {
 
   urlBase64ToUint8Array(base64String) {
     const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
-    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const base64 = (base64String + padding)
+      .replace(/-/g, '+')
+      .replace(/_/g, '/')
+      .replace(/\s/g, ''); 
+
     const rawData = atob(base64);
     const outputArray = new Uint8Array(rawData.length);
     for (let i = 0; i < rawData.length; ++i) {

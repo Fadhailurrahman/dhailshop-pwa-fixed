@@ -73,3 +73,20 @@ export async function register({ name, email, password }) {
     return { error: true, message: error.message || 'Tidak bisa mendaftar sekarang.' };
   }
 }
+
+export async function sendOfflineData(token, data) {
+  try {
+    const formData = new FormData();
+    formData.append('description', data.title || 'Offline item');
+    const response = await fetch(ENDPOINTS.STORIES, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
+    });
+    const result = await response.json();
+    return result;
+  } catch (err) {
+    console.error('❌ Gagal sinkronisasi data offline:', err);
+    return { error: true };
+  }
+}

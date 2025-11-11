@@ -1,5 +1,5 @@
 function extractPathnameSegments(path) {
-  const cleanPath = path.replace(/^\/+|\/+$/g, ''); 
+  const cleanPath = path.replace(/^\/+|\/+$/g, '');
   const splitUrl = cleanPath.split('/');
 
   return {
@@ -10,16 +10,14 @@ function extractPathnameSegments(path) {
 }
 
 function constructRouteFromSegments(segments) {
-  if (segments.resource === 'shop' && segments.subpath === 'add') {
-    return '/shop/add';
-  }
-
-  if (segments.resource && segments.subpath) {
-    return `/${segments.resource}/:id`;
-  }
-
-  if (segments.resource) return `/${segments.resource}`;
-  return '/';
+  if (segments.resource === 'shop' && segments.subpath === 'add') return '/shop/add';
+  if (segments.resource === 'shop' && segments.subpath) return '/shop/:id';
+  if (segments.resource === 'about') return '/about';
+  if (segments.resource === 'login') return '/login';
+  if (segments.resource === 'register') return '/register';
+  if (segments.resource === 'offline') return '/offline';
+  if (!segments.resource) return '/';
+  return '*';
 }
 
 export function getActivePathname() {
