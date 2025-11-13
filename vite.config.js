@@ -5,7 +5,7 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
 
   return {
-    base: '/dhailshop-pwa/',
+    base: '/dhailshop-pwa-fixed/',
     root: resolve(__dirname, 'src'),
     publicDir: resolve(__dirname, 'src/public'),
     build: {

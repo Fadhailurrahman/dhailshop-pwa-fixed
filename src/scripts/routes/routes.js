@@ -4,8 +4,9 @@ import ShopPage from '../pages/shop/shop-page.js';
 import AddShopPage from '../pages/shop/add-shop-page.js';
 import LoginPage from '../pages/auth/login-page.js';
 import RegisterPage from '../pages/auth/register-page.js';
-import OfflinePage from '../pages/offline-page.js';
+import OfflinePage from '../pages/save-product-page.js';
 import NotFoundPage from '../pages/not-found-page.js';
+import SaveProductPage from '../pages/save-product-page.js';
 
 const routes = {
   '/': { page: HomePage, requiresAuth: false },
@@ -15,7 +16,7 @@ const routes = {
   '/shop/:id': { page: ShopPage, requiresAuth: true },
   '/login': { page: LoginPage, requiresAuth: false },
   '/register': { page: RegisterPage, requiresAuth: false },
-  '/offline': { page: OfflinePage, requiresAuth: true },
+  '/offline': { page: SaveProductPage, requiresAuth: true },
   '*': { page: NotFoundPage, requiresAuth: false },
 };
 

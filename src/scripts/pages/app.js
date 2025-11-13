@@ -77,9 +77,11 @@ class App {
 
     let pageInstance;
     try {
-      pageInstance = params.length > 0
-        ? new route.page(...params) 
-        : (typeof route.page === 'function' ? new route.page() : route.page);
+      if (typeof route.page === 'function') {
+        pageInstance = params.length > 0 ? new route.page(...params) : new route.page();
+      } else {
+        pageInstance = route.page;
+      }
     } catch (err) {
       console.error('Error saat membuat instance page:', err);
       window.location.hash = '#/*';

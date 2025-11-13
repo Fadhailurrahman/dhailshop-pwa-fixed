@@ -26,14 +26,23 @@ document.addEventListener('DOMContentLoaded', async () => {
       console.log('💪 Service Worker siap digunakan untuk caching & push notification.');
 
       const permission = Notification.permission;
+
       if (permission === 'granted') {
-        await PushHelper.subscribeUserToPush(readyReg);
-        console.log('🔔 Notifikasi aktif dan tersubscribe.');
+        const existingSub = await readyReg.pushManager.getSubscription();
+        if (!existingSub) {
+          await PushHelper.subscribeUserToPush(readyReg);
+          console.log('🔔 Notifikasi aktif dan tersubscribe.');
+        } else {
+          console.log('✅ Subscription sudah ada, tidak perlu subscribe lagi.');
+        }
       } else if (permission === 'default') {
         const newPermission = await PushHelper.requestPermission();
         if (newPermission === 'granted') {
-          await PushHelper.subscribeUserToPush(readyReg);
-          console.log('🔔 Notifikasi diaktifkan.');
+          const existingSub = await readyReg.pushManager.getSubscription();
+          if (!existingSub) {
+            await PushHelper.subscribeUserToPush(readyReg);
+            console.log('🔔 Notifikasi diaktifkan.');
+          }
         } else {
           console.warn('🚫 Pengguna menolak notifikasi.');
         }
@@ -55,7 +64,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (e.target.checked) {
         const permission = await PushHelper.requestPermission();
         if (permission === 'granted') {
-          await PushHelper.subscribeUserToPush(reg);
+          const existingSub = await reg.pushManager.getSubscription();
+          if (!existingSub) {
+            await PushHelper.subscribeUserToPush(reg);
+          } else {
+            console.log('✅ Subscription sudah ada, tidak perlu subscribe lagi.');
+          }
           console.log('🔔 Notifikasi diaktifkan.');
         } else {
           e.target.checked = false;
@@ -63,7 +77,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
       } else {
         const sub = await reg.pushManager.getSubscription();
-        if (sub) await sub.unsubscribe();
+        if (sub) {
+          await sub.unsubscribe();
+          localStorage.removeItem('push-subscription-sent'); 
+        }
         console.log('🔕 Notifikasi dinonaktifkan.');
       }
     });
